@@ -97,11 +97,17 @@ function App() {
       data: dataO
     }]
   }
-
+console.log(data)
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+        <input onChange={(e) => {
+          fetch(`http://localhost:3001/search?q=${e.target.value}`)
+          .then((res) => res.json())
+          .then((res) => { setData(res) });
+        }} type="text"placeholder="Search"/>
+        <hr />
       </header>
       <h2>Welcome to your custom covid data app</h2>
       <body>

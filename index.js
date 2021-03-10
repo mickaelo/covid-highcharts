@@ -19,25 +19,19 @@ async function run() {
         }
     });
     let time = 370;
-    setInterval(async () => {
     const result = await fetch(
         'https://coronavirusapi-france.now.sh/AllDataByDepartement?Departement=Bas-Rhin'
     ).then(res => res.json())
     result.allDataByDepartement.forEach(async (res) => {
         // Create new Date instance
-        var date = new Date(res.date)
-        date.setDate(date.getDate() - time)
-        res.date = date
         // Add a day
         // Let's start by indexing some data
         await client.index({
             index: 'tr',
-            // type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
+            type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
             body: res
         })
     });
-    time = time * 2;
-}, 5000)
 
 
     // here we are forcing an index refresh, otherwise we will not
@@ -59,14 +53,53 @@ async function run() {
 
     // console.log(body.hits.hits)
 }
-
-
-
 const app = express();
+
+// define the /search route that should return elastic search results
+app.get('/search', function (req, res){
+    console.log(req)
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // declare the query object to search elastic search and return only 200 results from the first result found.
+    // also match any data where the name is like the query string sent in
+    let body = {
+      size: 200,
+      from: 0,
+      query: {
+        "range" : {
+            "hospitalises" : {
+                "gte" : req.query['q']
+            }
+        },
+        // match: {
+        //     date: req.query['q']
+        // }
+      }
+    }
+    // perform the actual search passing in the index, the search query and the type
+    client.search({index:'tr', body})
+    .then(results => {
+        console.log(results)
+      res.send(results.body.hits.hits);
+    })
+    .catch(err=>{
+      console.log(err)
+      res.send([]);
+    });
+  
+  })
+
 app.get("/api", async (req, res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     const data = await run()
+    res.send(data)
+});
+
+app.get("/search", async (req, res) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    const data = await search()
     res.send(data)
 });
 
