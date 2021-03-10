@@ -102,6 +102,9 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+      </header>
+      <h2>Welcome to your custom covid data app</h2>
+      <body>
         <p>{!data ? "Loading..." : <><HighchartsReact
           highcharts={Highcharts}
           options={options}
@@ -112,7 +115,7 @@ function App() {
             highcharts={Highcharts}
             options={options3}
           /></>}</p>
-      </header>
+      </body>
     </div>
   );
 }

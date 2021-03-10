@@ -8,18 +8,36 @@ const fetch = require('node-fetch');
 const PORT = process.env.PORT || 3001;
 
 async function run() {
+    client.indices.delete({
+        index: '_all'
+    }, function(err, res) {
+    
+        if (err) {
+            console.error(err.message);
+        } else {
+            console.log('Indexes have been deleted!');
+        }
+    });
+    let time = 370;
+    setInterval(async () => {
     const result = await fetch(
         'https://coronavirusapi-france.now.sh/AllDataByDepartement?Departement=Bas-Rhin'
     ).then(res => res.json())
-    console.log(result)
     result.allDataByDepartement.forEach(async (res) => {
+        // Create new Date instance
+        var date = new Date(res.date)
+        date.setDate(date.getDate() - time)
+        res.date = date
+        // Add a day
         // Let's start by indexing some data
         await client.index({
             index: 'tr',
             // type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
             body: res
         })
-      });
+    });
+    time = time * 2;
+}, 5000)
 
 
     // here we are forcing an index refresh, otherwise we will not
