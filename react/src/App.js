@@ -22,28 +22,25 @@ function App() {
   }, []);
 
   const dataO = data.map((res) => [
-    Highcharts.dateFormat('%a %d %b %H:%M:%S', res._source.date),
+    new Date(res._source.date).getTime(),
     res._source.hospitalises,
   ]).filter((t) => t[0] !== undefined && t[1] !== undefined).sort(function (x, y) {
     return new Date(x[0]).getTime() - new Date(y[0]).getTime();
   })
 
   const dataY = data.map((res) => [
-    Highcharts.dateFormat('%a %d %b %H:%M:%S', res._source.date),
+    new Date(res._source.date).getTime(),
     res._source.reanimation,
   ]).filter((t) => t[0] !== undefined && t[1] !== undefined).sort(function (x, y) {
     return new Date(x[0]).getTime() - new Date(y[0]).getTime();
   })
-
+  console.log(dataO)
   const options = {
     title: {
       text: 'Hospitalisations'
     },
     xAxis: {
-      dateTimeLabelFormats: {
-        day: '%d %b %Y'    //ex- 01 Jan 2016
-      },
-      type: 'datetime',
+      type: "datetime",
       title: {
         text: 'Date'
       }
@@ -54,6 +51,7 @@ function App() {
       }
     },
     series: [{
+      name: 'hospi',
       data: dataO
     }]
   }
@@ -63,6 +61,8 @@ function App() {
       text: 'Réanimations'
     },
     xAxis: {
+      type: "datetime",
+
       title: {
         text: 'Date'
       }
@@ -73,6 +73,7 @@ function App() {
       }
     },
     series: [{
+      name: 'réa',
       data: dataY
     }]
   }
@@ -82,6 +83,8 @@ function App() {
       text: 'Réanimations / Hospitalisations'
     },
     xAxis: {
+      type: "datetime",
+
       title: {
         text: 'Date'
       }
@@ -92,26 +95,36 @@ function App() {
       }
     },
     series: [{
+      name: 'Rea',
       data: dataY
     }, {
+      name: 'Hospi',
       data: dataO
     }]
   }
-console.log(data)
+  console.log(data)
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <input onChange={(e) => {
+        Covid Stats Bas-Rhin
+        <hr />
+        <div class="input-hidden-label"
+          aria-hidden="true">
+          Minimum hospitalisations threshold
+     </div>
+
+        <input width="500" onChange={(e) => {
           fetch(`http://localhost:3001/search?q=${e.target.value}`)
-          .then((res) => res.json())
-          .then((res) => { setData(res) });
-        }} type="text"placeholder="Search"/>
+            .then((res) => res.json())
+            .then((res) => { setData(res) });
+        }} type="text" />
         <hr />
       </header>
       <h2>Welcome to your custom covid data app</h2>
       <body>
-        <p>{!data ? "Loading..." : <><HighchartsReact
+        <div id="container" style={{height: 400}}>
+          <p>{!data ? "Loading..." : <><HighchartsReact
           highcharts={Highcharts}
           options={options}
         /><HighchartsReact
@@ -121,8 +134,9 @@ console.log(data)
             highcharts={Highcharts}
             options={options3}
           /></>}</p>
+        </div>
       </body>
-    </div>
+    </div >
   );
 }
 

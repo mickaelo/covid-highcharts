@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 3001;
 async function run() {
     client.indices.delete({
         index: '_all'
-    }, function(err, res) {
-    
+    }, function (err, res) {
+
         if (err) {
             console.error(err.message);
         } else {
@@ -41,6 +41,10 @@ async function run() {
     // Let's search!
     const { body } = await client.search({
         index: 'tr',
+        body: {
+            size: 200,
+            from: 0,
+        }
         // type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
         // body: {
         //     query: {
@@ -56,38 +60,38 @@ async function run() {
 const app = express();
 
 // define the /search route that should return elastic search results
-app.get('/search', function (req, res){
+app.get('/search', function (req, res) {
     console.log(req)
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     // declare the query object to search elastic search and return only 200 results from the first result found.
     // also match any data where the name is like the query string sent in
     let body = {
-      size: 200,
-      from: 0,
-      query: {
-        "range" : {
-            "hospitalises" : {
-                "gte" : req.query['q']
-            }
-        },
-        // match: {
-        //     date: req.query['q']
-        // }
-      }
+        size: 200,
+        from: 0,
+        query: {
+            "range": {
+                "hospitalises": {
+                    "gte": req.query['q']
+                }
+            },
+            // match: {
+            //     date: req.query['q']
+            // }
+        }
     }
     // perform the actual search passing in the index, the search query and the type
-    client.search({index:'tr', body})
-    .then(results => {
-        console.log(results)
-      res.send(results.body.hits.hits);
-    })
-    .catch(err=>{
-      console.log(err)
-      res.send([]);
-    });
-  
-  })
+    client.search({ index: 'tr', body })
+        .then(results => {
+            console.log(results)
+            res.send(results.body.hits.hits);
+        })
+        .catch(err => {
+            console.log(err)
+            res.send([]);
+        });
+
+})
 
 app.get("/api", async (req, res) => {
     res.header("Access-Control-Allow-Origin", "*");
